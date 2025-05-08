@@ -1,0 +1,219 @@
+/* Dashboard CSS */
+:root {
+    --primary-color: #3a7bd5;
+    --secondary-color: #00d2ff;
+    --dark-color: #2c3e50;
+    --light-color: #ecf0f1;
+    --success-color: #2ecc71;
+    --danger-color: #e74c3c;
+    --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    color: var(--dark-color);
+    min-height: 100vh;
+    padding: 20px;
+  }
+  
+  /* Dashboard Header */
+  .dashboard-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: var(--card-shadow);
+  }
+  
+  .dashboard-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+  }
+  
+  .dashboard-subtitle {
+    font-size: 16px;
+    color: #7f8c8d;
+  }
+  
+  /* Dashboard Grid Layout */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  
+  /* Cards for displaying price data */
+  .card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  
+  .card-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-color);
+  }
+  
+  /* Add specific colors for different cryptocurrencies */
+  .btc-card {
+    border-left: 5px solid #f2a900;
+  }
+  
+  .eth-card {
+    border-left: 5px solid #627eea;
+  }
+  
+  .sol-card {
+    border-left: 5px solid #00ffa3;
+  }
+  
+  .usdc-card {
+    border-left: 5px solid #2775ca;
+  }
+  
+  .sol-usdc-card {
+    border-left: 5px solid #00ffa3;
+  }
+  
+  /* Input Section */
+  .input-section {
+    background-color: white;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 30px;
+  }
+  
+  .input-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+  }
+  
+  .input-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .input-field {
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--dark-color);
+  }
+  
+  input[type="number"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: var(--transition);
+  }
+  
+  input[type="number"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(58, 123, 213, 0.2);
+    outline: none;
+  }
+  
+  button {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: var(--transition);
+  }
+  
+  button:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+  
+  button:active {
+    transform: translateY(0);
+  }
+  
+  /* Total Net Worth Section */
+  .net-worth-container {
+    background-color: white;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: var(--card-shadow);
+    text-align: center;
+  }
+  
+  .net-worth-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 15px;
+  }
+  
+  .net-worth-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--primary-color);
+    background: -webkit-linear-gradient(var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .input-group {
+      flex-direction: column;
+    }
+    
+    .card-value {
+      font-size: 20px;
+    }
+    
+    .net-worth-value {
+      font-size: 28px;
+    }
+  }

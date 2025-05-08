@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NET WORTH PORTFOLIO TRACKER</title>
+  <link rel="stylesheet" href="main_design.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <!-- Dashboard Header -->
+  <header class="dashboard-header">
+    <h1 class="dashboard-title">NET WORTH PORTFOLIO TRACKER</h1>
+    <p class="dashboard-subtitle">Track your crypto assets and net worth in one place</p>
+  </header>
+
+  <!-- Crypto Price Cards -->
+  <div class="dashboard-grid">
+    <div class="card btc-card">
+      <h3 class="card-title">Bitcoin</h3>
+      <p id="btc_price" class="card-value">BTC PRICE: Loading...</p>
+    </div>
+    
+    <div class="card eth-card">
+      <h3 class="card-title">Ethereum</h3>
+      <p id="eth_price" class="card-value">ETH PRICE: Loading...</p>
+    </div>
+    
+    <div class="card sol-card">
+      <h3 class="card-title">Solana</h3>
+      <p id="solana_price" class="card-value">SOLANA PRICE: Loading...</p>
+    </div>
+    
+    <div class="card usdc-card">
+      <h3 class="card-title">USDC Balance</h3>
+      <p id="usdc_bal" class="card-value">USDC BALANCE: Loading...</p>
+    </div>
+    
+    <div class="card sol-usdc-card">
+      <h3 class="card-title">Solana USDC Balance</h3>
+      <p id="sol_usdc_bal" class="card-value">SOLANA USDC BALANCE: Loading...</p>
+    </div>
+  </div>
+
+  <!-- Input Section -->
+  <section class="input-section">
+    <h2 class="input-title">Add Your Assets & Liabilities</h2>
+    
+    <div class="input-group">
+      <div class="input-field">
+        <label for="acc_balance_input">ACCOUNT BALANCE:</label>
+        <input id="acc_balance_input" type="number" placeholder="Enter balance">
+      </div>
+      <button onclick="accButtonSubmit()">ADD ACCOUNT</button>
+    </div>
+    
+    <div class="input-group">
+      <div class="input-field">
+        <label for="debt_input">DEBT BALANCE:</label>
+        <input id="debt_input" type="number" placeholder="Enter debt (use negative value)">
+      </div>
+      <button onclick="debtButtonSubmit()">ADD DEBT</button>
+    </div>
+  </section>
+
+  <!-- Total Net Worth Section -->
+  <div class="net-worth-container">
+    <h2 class="net-worth-title">YOUR TOTAL NET WORTH</h2>
+    <h1 id="total_networth" class="net-worth-value">$0</h1>
+  </div>
+
+  <script>
+    let number = 0;
+
+    // FUNCTION THAT FETCHES THREE MAJOR CRYPTO PRICES
+    async function fetchCryptoPrices() {
+      try {
+        const res = await fetch('/api/prices');
+        const data = await res.json();
+
+        console.log('API response:', data);
+
+        if (data?.data?.ETH?.quote?.USD?.price) {
+          document.getElementById('eth_price').textContent = `$${data.data.ETH.quote.USD.price.toFixed(2)}`;
+        } else {
+          document.getElementById('eth_price').textContent = 'Error loading data';
+          console.error('Missing ETH data:', data);
+        }
+
+        if (data?.data?.SOL?.quote?.USD?.price) {
+          document.getElementById('solana_price').textContent = `$${data.data.SOL.quote.USD.price.toFixed(2)}`;
+        } else {
+          document.getElementById('solana_price').textContent = 'Error loading data';
+          console.error('Missing SOL data:', data);
+        }
+
+        if (data?.data?.BTC?.quote?.USD?.price) {
+          document.getElementById('btc_price').textContent = `$${data.data.BTC.quote.USD.price.toFixed(2)}`;
+        } else {
+          document.getElementById('btc_price').textContent = 'Error loading data';
+          console.error('Missing BTC data:', data);
+        }
+
+      } catch (err) {
+        console.error('Failed to fetch prices:', err);
+        document.getElementById('eth_price').textContent = 'Error loading data';
+        document.getElementById('solana_price').textContent = 'Error loading data';
+        document.getElementById('btc_price').textContent = 'Error loading data';
+      }
+    }
+
+    // FUNCTION THAT FETCHES USDC BALANCE OF MY WALLET
+    async function fetchUSDCBalance() {
+      try {
+        const res = await fetch('/api/usdc-balance');
+        const data = await res.json();
+
+        if (data?.balance !== undefined) {
+          document.getElementById('usdc_bal').textContent = `$${data.balance.toFixed(2)}`;
+          number += Number(data.balance.toFixed(2));
+          getTotalNetWorth();
+        } else {
+          document.getElementById('usdc_bal').textContent = 'Error loading data';
+          console.error('Missing USDC data:', data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch USDC balance:', err);
+        document.getElementById('usdc_bal').textContent = 'Error loading data';
+      }
+    }
+
+    function accButtonSubmit() {
+        const input = Number(document.getElementById("acc_balance_input").value);
+        number += input;
+        getTotalNetWorth();
+        document.getElementById("acc_balance_input").value = "";
+    }
+
+    function debtButtonSubmit() {
+        const input = Number(document.getElementById("debt_input").value);
+        number += input;
+        getTotalNetWorth();
+        document.getElementById("debt_input").value = "";
+    }
+
+    function getTotalNetWorth() {
+        document.getElementById('total_networth').textContent = `$${number.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+
+    async function fetchSolanaUSDCBalance() {
+      try {
+        const res = await fetch('/api/solana-usdc-balance');
+        const data = await res.json();
+
+        if (data?.usdc_balance !== undefined) {
+          document.getElementById('sol_usdc_bal').textContent = `$${data.usdc_balance.toFixed(2)}`;
+          number += Number(data.usdc_balance.toFixed(2));
+          getTotalNetWorth();
+        } else {
+          document.getElementById('sol_usdc_bal').textContent = 'Error loading data';
+          console.error('Missing Solana USDC data:', data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch Solana USDC balance:', err);
+        document.getElementById('sol_usdc_bal').textContent = 'Error loading data';
+      }
+    }
+
+    // Initialize the dashboard
+    fetchCryptoPrices();
+    fetchUSDCBalance();
+    fetchSolanaUSDCBalance();
+
+    // Add periodic refresh of cryptocurrency prices (every 5 minutes)
+    setInterval(fetchCryptoPrices, 300000);
+  </script>
+</body>
+</html>
