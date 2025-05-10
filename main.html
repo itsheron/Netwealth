@@ -4,6 +4,7 @@
   <title>NET WORTH PORTFOLIO TRACKER</title>
   <link rel="stylesheet" href="main_design.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <!-- Dashboard Header -->
@@ -65,10 +66,84 @@
   <div class="net-worth-container">
     <h2 class="net-worth-title">YOUR TOTAL NET WORTH</h2>
     <h1 id="total_networth" class="net-worth-value">$0</h1>
+    <button onclick="saveNetWorthSnapshot()" style="margin-top: 15px; padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">Save Net Worth Snapshot</button>
+  </div>
+
+  <!-- Net Worth Graph Section -->
+  <div class="graph-container" style="margin-top: 40px; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <h2 style="color: #333; margin-bottom: 20px;">Net Worth History</h2>
+    <div style="position: relative; height: 400px;">
+      <canvas id="netWorthChart"></canvas>
+    </div>
+    <div style="margin-top: 20px;">
+      <button onclick="updateTimeframe('7d')" style="margin-right: 10px; padding: 5px 15px;">7 Days</button>
+      <button onclick="updateTimeframe('30d')" style="margin-right: 10px; padding: 5px 15px;">30 Days</button>
+      <button onclick="updateTimeframe('90d')" style="margin-right: 10px; padding: 5px 15px;">90 Days</button>
+      <button onclick="updateTimeframe('1y')" style="margin-right: 10px; padding: 5px 15px;">1 Year</button>
+    </div>
   </div>
 
   <script>
     let number = 0;
+    let chart = null;
+    let chartTimeframe = '30d';
+
+    // Initialize Chart.js
+    function initializeChart() {
+      const ctx = document.getElementById('netWorthChart').getContext('2d');
+      
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Net Worth',
+            data: [],
+            borderColor: '#4CAF50',
+            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.1,
+            pointRadius: 5,
+            pointBackgroundColor: '#4CAF50',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: false,
+              ticks: {
+                callback: function(value) {
+                  return '$' + value.toLocaleString();
+                }
+              }
+            },
+            x: {
+              ticks: {
+                maxRotation: 45,
+                minRotation: 45
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return 'Net Worth: $' + context.raw.toLocaleString();
+                }
+              }
+            }
+          }
+        }
+      });
+    }
 
     // FUNCTION THAT FETCHES THREE MAJOR CRYPTO PRICES
     async function fetchCryptoPrices() {
@@ -164,13 +239,98 @@
       }
     }
 
+    // Save current net worth snapshot
+    async function saveNetWorthSnapshot() {
+      try {
+        const response = await fetch('/api/save-networth', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ netWorth: number })
+        });
+
+        if (response.ok) {
+          await updateNetWorthChart();
+          alert('Net worth saved successfully!');
+        } else {
+          throw new Error('Failed to save net worth');
+        }
+      } catch (error) {
+        console.error('Error saving net worth:', error);
+        alert('Failed to save net worth. Please try again.');
+      }
+    }
+
+    // Update net worth chart
+    async function updateNetWorthChart() {
+      try {
+        const response = await fetch('/api/networth-history');
+        const data = await response.json();
+
+        // Filter data based on timeframe
+        const filteredData = filterDataByTimeframe(data, chartTimeframe);
+
+        // Format data for chart
+        const labels = filteredData.map(entry => {
+          const date = new Date(entry.timestamp);
+          return date.toLocaleDateString();
+        });
+
+        const values = filteredData.map(entry => entry.netWorth);
+
+        // Update chart
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = values;
+        chart.update();
+      } catch (error) {
+        console.error('Error updating chart:', error);
+      }
+    }
+
+    // Filter data based on timeframe
+    function filterDataByTimeframe(data, timeframe) {
+      const now = new Date();
+      let cutoffDate;
+
+      switch (timeframe) {
+        case '7d':
+          cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case '30d':
+          cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case '90d':
+          cutoffDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+          break;
+        case '1y':
+          cutoffDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      }
+
+      return data.filter(entry => new Date(entry.timestamp) > cutoffDate);
+    }
+
+    // Update timeframe
+    function updateTimeframe(timeframe) {
+      chartTimeframe = timeframe;
+      updateNetWorthChart();
+    }
+
     // Initialize the dashboard
     fetchCryptoPrices();
     fetchUSDCBalance();
     fetchSolanaUSDCBalance();
+    initializeChart();
 
     // Add periodic refresh of cryptocurrency prices (every 5 minutes)
     setInterval(fetchCryptoPrices, 300000);
+
+    // Update chart initially and then every 30 minutes
+    updateNetWorthChart();
+    setInterval(updateNetWorthChart, 1800000);
   </script>
 </body>
 </html>
